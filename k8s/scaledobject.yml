@@ -13,12 +13,12 @@ spec:
         queueName: celery
         queueLength: "5"
       authenticationRef:
-        name: rabbitmq-consumer-trigger
+        name: celery-queue-trigger
 ---
 apiVersion: keda.sh/v1alpha1
 kind: TriggerAuthentication
 metadata:
-  name: rabbitmq-consumer-trigger
+  name: celery-queue-trigger
   namespace: default
 spec:
   secretTargetRef:
