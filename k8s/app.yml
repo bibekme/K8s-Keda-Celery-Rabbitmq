@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-app-deployment
+  namespace: default
+  labels:
+    app: django-app
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: django-app
+  template:
+    metadata:
+      labels:
+        app: django-app
+    spec:
+      terminationGracePeriodSeconds: 300
+      containers:
+        - name: django-app
+          image: bibekkhatri/django-celery-keda-example:1.0.0
+          command: ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          ports:
+            - containerPort: 8000
+          env:
+            - name: CELERY_BROKER_URL
+              valueFrom:
+                secretKeyRef:
+                  name: django
+                  key: celery-broker-url
+                  optional: false
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django-app-lb
+spec:
+  selector:
+    app: django-app
+  ports:
+    - port: 8000
+      name: http
+      targetPort: 8000
+  type: LoadBalancer

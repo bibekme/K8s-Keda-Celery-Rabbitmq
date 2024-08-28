@@ -1,0 +1,43 @@
+services:
+  django:
+    build: .
+    container_name: app
+    env_file:
+      - .env
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/app
+    ports:
+      - "8001:8000"
+
+  celery:
+    build: .
+    container_name: celery
+    env_file:
+      - .env
+    command: celery -A core worker --loglevel=info
+    depends_on:
+      - rabbitmq
+
+  flower:
+    build: .
+    container_name: flower
+    env_file:
+      - .env
+    command: celery -A core flower --port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - celery
+
+  rabbitmq:
+    image: rabbitmq:management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  rabbitmq_data:

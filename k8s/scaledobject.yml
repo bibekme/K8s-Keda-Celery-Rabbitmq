@@ -1,0 +1,29 @@
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: django-celery-worker-deployment
+spec:
+  scaleTargetRef:
+    name: django-celery-worker-deployment
+  minReplicaCount: 1
+  maxReplicaCount: 5
+  triggers:
+    - type: rabbitmq
+      metadata:
+        queueName: celery
+        queueLength: "5"
+      authenticationRef:
+        name: rabbitmq-consumer-trigger
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: rabbitmq-consumer-trigger
+  namespace: default
+spec:
+  secretTargetRef:
+    - parameter: host
+      name: django
+      key: celery-broker-url
+---
+
