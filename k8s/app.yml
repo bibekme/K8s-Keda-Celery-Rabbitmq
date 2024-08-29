@@ -42,7 +42,6 @@ spec:
                   name: django
                   key: celery-broker-url
                   optional: false
-
 ---
 apiVersion: v1
 kind: Service
